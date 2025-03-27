@@ -65,20 +65,25 @@ def get_dataloader(
                             drop_last=(split == 'train'))
 
     return dataloader
-
 class UnlabeledDataset(Dataset):
     def __init__(self, dataset_dir, transform=None):
         super(UnlabeledDataset).__init__()
         self.dataset_dir = dataset_dir
         self.transform = transform
-        self.image_names = os.listdir(self.dataset_dir)
+
+        # Filter only image files
+        valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')
+        self.image_names = [
+            f for f in os.listdir(self.dataset_dir)
+            if f.lower().endswith(valid_extensions)
+        ]
 
     def __len__(self):
         return len(self.image_names)
 
     def __getitem__(self, index):
         image_path = os.path.join(self.dataset_dir, self.image_names[index])
-        image = Image.open(image_path).convert('RGB')
+        image = Image.open(image_path).convert('RGB')  # Ensure image is in RGB format
         if self.transform:
             image = self.transform(image)
         return {'images': image}
